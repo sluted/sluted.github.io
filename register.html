@@ -95,37 +95,18 @@
         placeholder="Search profiles..."
     >
 
-    <div class="controls">
+  <div class="controls">
 
-        <button onclick="filterTag('all')">
-            All
-        </button>
+    <div id="tags"></div>
 
-        <button onclick="filterTag('technology')">
-            Technology
-        </button>
+    <select id="sort" onchange="loadProfiles()">
+        <option value="newest">Newest</option>
+        <option value="views">Most viewed</option>
+        <option value="posts">Most posts</option>
+        <option value="name">Alphabetical</option>
+    </select>
 
-        <button onclick="filterTag('politics')">
-            Politics
-        </button>
-
-        <button onclick="filterTag('anonymous')">
-            Anonymous
-        </button>
-
-        <button onclick="filterTag('germany')">
-            Germany
-        </button>
-
-        <select id="sort" onchange="loadProfiles()">
-            <option value="newest">Newest</option>
-            <option value="views">Most viewed</option>
-            <option value="posts">Most posts</option>
-            <option value="name">Alphabetical</option>
-        </select>
-
-    </div>
-
+</div>
     <div id="status">
         Loading profiles...
     </div>
@@ -148,6 +129,50 @@
 
         let currentTag = "all";
 
+        async function loadTags() {
+
+    const container = document.getElementById("tags");
+
+    const { data, error } = await db
+        .from("tags")
+        .select("*")
+        .order("name");
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    const allButton = document.createElement("button");
+
+    allButton.textContent = "All";
+
+    allButton.onclick = function() {
+        filterTag("all");
+    };
+
+    container.appendChild(allButton);
+
+
+    data.forEach(tag => {
+
+        const button = document.createElement("button");
+
+        button.textContent = tag.name;
+
+        button.onclick = function() {
+            filterTag(tag.name.toLowerCase());
+        };
+
+        container.appendChild(button);
+
+    });
+
+}
 
         async function loadProfiles() {
 
@@ -304,6 +329,7 @@
 
             currentTag = tag;
 
+            loadTags();
             loadProfiles();
 
         }
