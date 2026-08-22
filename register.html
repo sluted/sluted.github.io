@@ -6,6 +6,8 @@
 
     <title>Creators</title>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,14 +28,15 @@
             margin-bottom: 20px;
         }
 
-        .tags {
+        .controls {
             display: flex;
-            flex-wrap: wrap;
             gap: 10px;
+            flex-wrap: wrap;
             margin-bottom: 30px;
         }
 
-        .tag {
+        button,
+        select {
             padding: 8px 14px;
             border: 1px solid #ccc;
             background: white;
@@ -41,7 +44,8 @@
             cursor: pointer;
         }
 
-        .tag:hover {
+        button:hover,
+        select:hover {
             background: #eee;
         }
 
@@ -61,9 +65,19 @@
             font-size: 14px;
         }
 
+        .profile-stats {
+            color: #888;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
         .back {
             display: inline-block;
             margin-bottom: 30px;
+        }
+
+        #status {
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -72,7 +86,7 @@
 
     <a class="back" href="index.html">← Home</a>
 
-    <h1>Register</h1>
+    <h1>Creators</h1>
 
     <input
         type="text"
@@ -81,95 +95,226 @@
         placeholder="Search profiles..."
     >
 
-    <div class="tags">
-        <button class="tag" onclick="filterTag('all')">All</button>
-        <button class="tag" onclick="filterTag('technology')">Technology</button>
-        <button class="tag" onclick="filterTag('politics')">Politics</button>
-        <button class="tag" onclick="filterTag('anonymous')">Anonymous</button>
-    </div>
+    <div class="controls">
 
-    <div id="profiles">
+        <button onclick="filterTag('all')">
+            All
+        </button>
 
-        <div
-            class="profile"
-            data-name="Example Profile"
-            data-tags="technology anonymous"
-        >
-            <h2>Example Profile</h2>
+        <button onclick="filterTag('technology')">
+            Technology
+        </button>
 
-            <p>
-                This is an example profile.
-            </p>
+        <button onclick="filterTag('politics')">
+            Politics
+        </button>
 
-            <div class="profile-tags">
-                Tags: Technology, Anonymous
-            </div>
-        </div>
+        <button onclick="filterTag('anonymous')">
+            Anonymous
+        </button>
 
-        <div
-            class="profile"
-            data-name="Second Profile"
-            data-tags="politics"
-        >
-            <h2>Second Profile</h2>
+        <button onclick="filterTag('germany')">
+            Germany
+        </button>
 
-            <p>
-                This is another example profile.
-            </p>
-
-            <div class="profile-tags">
-                Tags: Politics
-            </div>
-        </div>
+        <select id="sort" onchange="loadProfiles()">
+            <option value="newest">Newest</option>
+            <option value="views">Most viewed</option>
+            <option value="posts">Most posts</option>
+            <option value="name">Alphabetical</option>
+        </select>
 
     </div>
+
+    <div id="status">
+        Loading profiles...
+    </div>
+
+    <div id="profiles"></div>
+
 
     <script>
 
-        const search = document.getElementById("search");
-        const profiles = document.querySelectorAll(".profile");
+        const SUPABASE_URL = "https://qmypbudkzaaybarhcjhn.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_PIiIFOfS8JqGPV2s1-v-6w_fU7ZlN-2";
 
-        search.addEventListener("input", function () {
+        const { createClient } = supabase;
 
-            const searchText = search.value.toLowerCase();
+        const db = createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
 
-            profiles.forEach(function(profile) {
 
-                const name = profile.dataset.name.toLowerCase();
-                const tags = profile.dataset.tags.toLowerCase();
-                const text = profile.innerText.toLowerCase();
+        let currentTag = "all";
 
-                if (
-                    name.includes(searchText) ||
-                    tags.includes(searchText) ||
-                    text.includes(searchText)
-                ) {
-                    profile.style.display = "block";
-                } else {
-                    profile.style.display = "none";
+
+        async function loadProfiles() {
+
+            const container = document.getElementById("profiles");
+            const status = document.getElementById("status");
+            const sort = document.getElementById("sort").value;
+            const search = document
+                .getElementById("search")
+                .value
+                .toLowerCase();
+
+            status.textContent = "Loading profiles...";
+            container.innerHTML = "";
+
+
+            let query = db
+                .from("profiles")
+                .select("*");
+
+
+            if (sort === "views") {
+                query = query.order("views", {
+                    ascending: false
+                });
+            }
+
+            else if (sort === "posts") {
+                query = query.order("posts_count", {
+                    ascending: false
+                });
+            }
+
+            else if (sort === "name") {
+                query = query.order("name", {
+                    ascending: true
+                });
+            }
+
+            else {
+                query = query.order("created_at", {
+                    ascending: false
+                });
+            }
+
+
+            const { data, error } = await query;
+
+
+            if (error) {
+
+                console.error(error);
+
+                status.textContent =
+                    "Could not load profiles.";
+
+                return;
+            }
+
+
+            let visibleProfiles = data;
+
+
+            if (currentTag !== "all") {
+
+                const { data: connections, error: tagError } =
+                    await db
+                        .from("profile_tags")
+                        .select(`
+                            profile_id,
+                            tags!inner(name)
+                        `)
+                        .eq("tags.name", currentTag);
+
+
+                if (tagError) {
+
+                    console.error(tagError);
+
+                    status.textContent =
+                        "Could not load tags.";
+
+                    return;
                 }
 
-            });
 
-        });
+                const ids = connections.map(
+                    connection => connection.profile_id
+                );
 
 
-        function filterTag(tag) {
+                visibleProfiles = visibleProfiles.filter(
+                    profile => ids.includes(profile.id)
+                );
+            }
 
-            profiles.forEach(function(profile) {
 
-                if (
-                    tag === "all" ||
-                    profile.dataset.tags.includes(tag)
-                ) {
-                    profile.style.display = "block";
-                } else {
-                    profile.style.display = "none";
-                }
+            if (search) {
+
+                visibleProfiles = visibleProfiles.filter(
+                    profile =>
+                        profile.name.toLowerCase().includes(search) ||
+                        (profile.description || "")
+                            .toLowerCase()
+                            .includes(search)
+                );
+            }
+
+
+            if (visibleProfiles.length === 0) {
+
+                status.textContent =
+                    "No profiles found.";
+
+                return;
+            }
+
+
+            status.textContent =
+                visibleProfiles.length + " profiles";
+
+
+            visibleProfiles.forEach(profile => {
+
+                const element =
+                    document.createElement("div");
+
+                element.className = "profile";
+
+
+                element.innerHTML = `
+
+                    <h2>${profile.name}</h2>
+
+                    <p>
+                        ${profile.description || ""}
+                    </p>
+
+                    <div class="profile-stats">
+                        ${profile.views} views ·
+                        ${profile.posts_count} posts
+                    </div>
+
+                `;
+
+
+                container.appendChild(element);
 
             });
 
         }
+
+
+        function filterTag(tag) {
+
+            currentTag = tag;
+
+            loadProfiles();
+
+        }
+
+
+        document
+            .getElementById("search")
+            .addEventListener("input", loadProfiles);
+
+
+        loadProfiles();
 
     </script>
 
