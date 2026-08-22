@@ -117,12 +117,16 @@
     }
 
 
-    await db.rpc(
-        "increment_profile_views",
-        {
-            profile_id_input: profileId
-        }
-    );
+    const { error: viewError } = await db.rpc(
+    "increment_profile_views",
+    {
+        profile_id_input: profileId
+    }
+);
+
+if (viewError) {
+    console.error("View counter error:", viewError);
+}
 
 
     const { data: profile, error } =
