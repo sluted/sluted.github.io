@@ -89,150 +89,61 @@
 
         async function loadProfile() {
 
-    const params = new URLSearchParams(
-        window.location.search
-    );
+            const params = new URLSearchParams(
+                window.location.search
+            );
 
-    const id = params.get("id");
-
-
-    if (!id) {
-
-        document.getElementById("status").textContent =
-            "Profile not found.";
-
-        return;
-    }
+            const id = params.get("id");
 
 
-    const profileId = Number(id);
+            if (!id) {
+
+                document.getElementById("status").textContent =
+                    "Profile not found.";
+
+                return;
+            }
 
 
-    if (!Number.isInteger(profileId)) {
-
-        document.getElementById("status").textContent =
-            "Invalid profile.";
-
-        return;
-    }
+            const profileId = Number(id);
 
 
-    const { error: viewError } = await db.rpc(
-    "increment_profile_views",
-    {
-        profile_id_input: profileId
-    }
-);
+            if (!Number.isInteger(profileId)) {
 
-if (viewError) {
-    console.error("View counter error:", viewError);
-}
+                document.getElementById("status").textContent =
+                    "Invalid profile.";
+
+                return;
+            }
 
 
-    const { data: profile, error } =
-        await db
-            .from("profiles")
-            .select("*")
-            .eq("id", profileId)
-            .single();
+            // Count the view in the background.
+            // A view-counter error must not prevent the profile from loading.
+
+            db.rpc(
+                "increment_profile_views",
+                {
+                    profile_id_input: profileId
+                }
+            ).then(({ error }) => {
+
+                if (error) {
+                    console.error(
+                        "View counter error:",
+                        error
+                    );
+                }
+
+            });
 
 
-    if (error) {
-
-        console.error(error);
-
-        document.getElementById("status").textContent =
-            "Profile not found.";
-
-        return;
-    }
-
-
-    const { data: connections, error: tagError } =
-        await db
-            .from("profile_tags")
-            .select(`
-                tags(name)
-            `)
-            .eq("profile_id", profileId);
-
-
-    if (tagError) {
-
-        console.error(tagError);
-
-    }
-
-
-    const tags = connections || [];
-
-
-    document.getElementById("status").textContent = "";
-
-
-    const container =
-        document.getElementById("profile");
-
-
-    let image = "";
-
-
-    if (profile.image_url) {
-
-        image = `
-            <img
-                class="profile-image"
-                src="${profile.image_url}"
-                alt="${profile.name}"
-            >
-        `;
-
-    }
-
-
-    let tagHTML = "";
-
-
-    tags.forEach(connection => {
-
-        tagHTML += `
-            <span class="tag">
-                ${connection.tags.name}
-            </span>
-        `;
-
-    });
-
-
-    container.innerHTML = `
-
-        ${image}
-
-        <h1>${profile.name}</h1>
-
-        <p>
-            ${profile.description || ""}
-        </p>
-
-        <div class="tags">
-            ${tagHTML}
-        </div>
-
-        <div class="stats">
-            ${profile.views} views ·
-            ${profile.posts_count} posts
-        </div>
-
-    `;
-
-}
-
+            // Load profile
 
             const { data: profile, error } =
                 await db
                     .from("profiles")
                     .select("*")
-                    .eq("id", id)
+                    .eq("id", profileId)
                     .single();
 
 
@@ -247,18 +158,23 @@ if (viewError) {
             }
 
 
+            // Load profile tags
+
             const { data: connections, error: tagError } =
                 await db
                     .from("profile_tags")
                     .select(`
                         tags(name)
                     `)
-                    .eq("profile_id", id);
+                    .eq("profile_id", profileId);
 
 
             if (tagError) {
 
-                console.error(tagError);
+                console.error(
+                    "Tag loading error:",
+                    tagError
+                );
 
             }
 
@@ -273,7 +189,10 @@ if (viewError) {
                 document.getElementById("profile");
 
 
+            // Profile image
+
             let image = "";
+
 
             if (profile.image_url) {
 
@@ -288,18 +207,27 @@ if (viewError) {
             }
 
 
+            // Tags
+
             let tagHTML = "";
+
 
             tags.forEach(connection => {
 
-                tagHTML += `
-                    <span class="tag">
-                        ${connection.tags.name}
-                    </span>
-                `;
+                if (connection.tags) {
+
+                    tagHTML += `
+                        <span class="tag">
+                            ${connection.tags.name}
+                        </span>
+                    `;
+
+                }
 
             });
 
+
+            // Display profile
 
             container.innerHTML = `
 
