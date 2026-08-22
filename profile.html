@@ -89,20 +89,139 @@
 
         async function loadProfile() {
 
-            const params = new URLSearchParams(
-                window.location.search
-            );
+    const params = new URLSearchParams(
+        window.location.search
+    );
 
-            const id = params.get("id");
+    const id = params.get("id");
 
 
-            if (!id) {
+    if (!id) {
 
-                document.getElementById("status").textContent =
-                    "Profile not found.";
+        document.getElementById("status").textContent =
+            "Profile not found.";
 
-                return;
-            }
+        return;
+    }
+
+
+    const profileId = Number(id);
+
+
+    if (!Number.isInteger(profileId)) {
+
+        document.getElementById("status").textContent =
+            "Invalid profile.";
+
+        return;
+    }
+
+
+    await db.rpc(
+        "increment_profile_views",
+        {
+            profile_id_input: profileId
+        }
+    );
+
+
+    const { data: profile, error } =
+        await db
+            .from("profiles")
+            .select("*")
+            .eq("id", profileId)
+            .single();
+
+
+    if (error) {
+
+        console.error(error);
+
+        document.getElementById("status").textContent =
+            "Profile not found.";
+
+        return;
+    }
+
+
+    const { data: connections, error: tagError } =
+        await db
+            .from("profile_tags")
+            .select(`
+                tags(name)
+            `)
+            .eq("profile_id", profileId);
+
+
+    if (tagError) {
+
+        console.error(tagError);
+
+    }
+
+
+    const tags = connections || [];
+
+
+    document.getElementById("status").textContent = "";
+
+
+    const container =
+        document.getElementById("profile");
+
+
+    let image = "";
+
+
+    if (profile.image_url) {
+
+        image = `
+            <img
+                class="profile-image"
+                src="${profile.image_url}"
+                alt="${profile.name}"
+            >
+        `;
+
+    }
+
+
+    let tagHTML = "";
+
+
+    tags.forEach(connection => {
+
+        tagHTML += `
+            <span class="tag">
+                ${connection.tags.name}
+            </span>
+        `;
+
+    });
+
+
+    container.innerHTML = `
+
+        ${image}
+
+        <h1>${profile.name}</h1>
+
+        <p>
+            ${profile.description || ""}
+        </p>
+
+        <div class="tags">
+            ${tagHTML}
+        </div>
+
+        <div class="stats">
+            ${profile.views} views ·
+            ${profile.posts_count} posts
+        </div>
+
+    `;
+
+}
 
 
             const { data: profile, error } =
