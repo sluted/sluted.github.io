@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Creators</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .search {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tag {
+            padding: 8px 14px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .tag:hover {
+            background: #eee;
+        }
+
+        .profile {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .profile h2 {
+            margin-top: 0;
+        }
+
+        .profile-tags {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a class="back" href="index.html">← Home</a>
+
+    <h1>Register</h1>
+
+    <input
+        type="text"
+        id="search"
+        class="search"
+        placeholder="Search profiles..."
+    >
+
+    <div class="tags">
+        <button class="tag" onclick="filterTag('all')">All</button>
+        <button class="tag" onclick="filterTag('technology')">Technology</button>
+        <button class="tag" onclick="filterTag('politics')">Politics</button>
+        <button class="tag" onclick="filterTag('anonymous')">Anonymous</button>
+    </div>
+
+    <div id="profiles">
+
+        <div
+            class="profile"
+            data-name="Example Profile"
+            data-tags="technology anonymous"
+        >
+            <h2>Example Profile</h2>
+
+            <p>
+                This is an example profile.
+            </p>
+
+            <div class="profile-tags">
+                Tags: Technology, Anonymous
+            </div>
+        </div>
+
+        <div
+            class="profile"
+            data-name="Second Profile"
+            data-tags="politics"
+        >
+            <h2>Second Profile</h2>
+
+            <p>
+                This is another example profile.
+            </p>
+
+            <div class="profile-tags">
+                Tags: Politics
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+
+        const search = document.getElementById("search");
+        const profiles = document.querySelectorAll(".profile");
+
+        search.addEventListener("input", function () {
+
+            const searchText = search.value.toLowerCase();
+
+            profiles.forEach(function(profile) {
+
+                const name = profile.dataset.name.toLowerCase();
+                const tags = profile.dataset.tags.toLowerCase();
+                const text = profile.innerText.toLowerCase();
+
+                if (
+                    name.includes(searchText) ||
+                    tags.includes(searchText) ||
+                    text.includes(searchText)
+                ) {
+                    profile.style.display = "block";
+                } else {
+                    profile.style.display = "none";
+                }
+
+            });
+
+        });
+
+
+        function filterTag(tag) {
+
+            profiles.forEach(function(profile) {
+
+                if (
+                    tag === "all" ||
+                    profile.dataset.tags.includes(tag)
+                ) {
+                    profile.style.display = "block";
+                } else {
+                    profile.style.display = "none";
+                }
+
+            });
+
+        }
+
+    </script>
+
+</body>
+</html>
