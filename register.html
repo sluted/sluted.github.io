@@ -238,13 +238,13 @@
             if (currentTag !== "all") {
 
                 const { data: connections, error: tagError } =
-                    await db
-                        .from("profile_tags")
-                        .select(`
-                            profile_id,
-                            tags!inner(name)
-                        `)
-                        .eq("tags.name", currentTag);
+    await db
+        .from("profile_tags")
+        .select(`
+            profile_id,
+            tags!inner(name)
+        `)
+        .ilike("tags.name", currentTag);
 
 
                 if (tagError) {
