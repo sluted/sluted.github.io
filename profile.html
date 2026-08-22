@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Profile</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .profile {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        .profile-image {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #eee;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .tag {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .stats {
+            margin-top: 25px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        #status {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a class="back" href="register.html">← Back to Register</a>
+
+    <div id="status">
+        Loading profile...
+    </div>
+
+    <div id="profile"></div>
+
+
+    <script>
+
+        const SUPABASE_URL = "YOUR_PROJECT_URL";
+        const SUPABASE_KEY = "YOUR_PUBLISHABLE_KEY";
+
+        const { createClient } = supabase;
+
+        const db = createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+        async function loadProfile() {
+
+            const params = new URLSearchParams(
+                window.location.search
+            );
+
+            const id = params.get("id");
+
+
+            if (!id) {
+
+                document.getElementById("status").textContent =
+                    "Profile not found.";
+
+                return;
+            }
+
+
+            const { data: profile, error } =
+                await db
+                    .from("profiles")
+                    .select("*")
+                    .eq("id", id)
+                    .single();
+
+
+            if (error) {
+
+                console.error(error);
+
+                document.getElementById("status").textContent =
+                    "Profile not found.";
+
+                return;
+            }
+
+
+            const { data: connections, error: tagError } =
+                await db
+                    .from("profile_tags")
+                    .select(`
+                        tags(name)
+                    `)
+                    .eq("profile_id", id);
+
+
+            if (tagError) {
+
+                console.error(tagError);
+
+            }
+
+
+            const tags = connections || [];
+
+
+            document.getElementById("status").textContent = "";
+
+
+            const container =
+                document.getElementById("profile");
+
+
+            let image = "";
+
+            if (profile.image_url) {
+
+                image = `
+                    <img
+                        class="profile-image"
+                        src="${profile.image_url}"
+                        alt="${profile.name}"
+                    >
+                `;
+
+            }
+
+
+            let tagHTML = "";
+
+            tags.forEach(connection => {
+
+                tagHTML += `
+                    <span class="tag">
+                        ${connection.tags.name}
+                    </span>
+                `;
+
+            });
+
+
+            container.innerHTML = `
+
+                ${image}
+
+                <h1>${profile.name}</h1>
+
+                <p>
+                    ${profile.description || ""}
+                </p>
+
+                <div class="tags">
+                    ${tagHTML}
+                </div>
+
+                <div class="stats">
+                    ${profile.views} views ·
+                    ${profile.posts_count} posts
+                </div>
+
+            `;
+
+        }
+
+
+        loadProfile();
+
+    </script>
+
+</body>
+</html>
