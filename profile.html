@@ -197,7 +197,28 @@ if (imageError) {
     );
 
 }
+const imageList = images || [];
+            let galleryHTML = "";
+            imageList.forEach(image => {
 
+    const {
+        data: publicUrl
+    } = db.storage
+        .from("images")
+        .getPublicUrl(image.storage_path);
+
+
+    galleryHTML += `
+
+        <img
+            class="gallery-image"
+            src="${publicUrl.publicUrl}"
+            alt="${image.title || profile.name}"
+        >
+
+    `;
+
+});
 
             if (tagError) {
 
