@@ -60,6 +60,26 @@
         #status {
             margin-bottom: 20px;
         }
+
+        .image-gallery {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 10px 0 20px 0;
+}
+
+.gallery-image {
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex: 0 0 auto;
+    cursor: pointer;
+}
+
+.gallery-image:hover {
+    opacity: 0.85;
+}
     </style>
 </head>
 
@@ -160,13 +180,23 @@
 
             // Load profile tags
 
-            const { data: connections, error: tagError } =
-                await db
-                    .from("profile_tags")
-                    .select(`
-                        tags(name)
-                    `)
-                    .eq("profile_id", profileId);
+            const { data: images, error: imageError } =
+    await db
+        .from("profile_images")
+        .select("*")
+        .eq("profile_id", profileId)
+        .eq("status", "approved")
+        .order("position", { ascending: true });
+
+
+if (imageError) {
+
+    console.error(
+        "Image loading error:",
+        imageError
+    );
+
+}
 
 
             if (tagError) {
