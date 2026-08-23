@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,33 +10,106 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            color: #111;
+            background: #fff;
+        }
+
+        a {
+            color: inherit;
         }
 
         .back {
             display: inline-block;
             margin-bottom: 30px;
+            text-decoration: none;
+            color: #555;
         }
 
-        .profile {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 30px;
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        #status {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        /* =========================
+           PROFILE HEADER
+        ========================= */
+
+        .profile-header {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 30px;
+        }
+
+        .profile-top {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
         }
 
         .profile-image {
             width: 180px;
             height: 180px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 50%;
             background: #eee;
-            display: block;
-            margin-bottom: 20px;
+            flex-shrink: 0;
         }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+
+        .profile-description {
+            margin: 0;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        /* =========================
+           EXTERNAL LINKS
+        ========================= */
+
+        .profile-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .profile-link {
+            display: inline-block;
+            padding: 7px 13px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .profile-link:hover {
+            background: #f3f3f3;
+        }
+
+        /* =========================
+           TAGS
+        ========================= */
 
         .tags {
             display: flex;
@@ -49,43 +123,195 @@
             border: 1px solid #ccc;
             border-radius: 20px;
             font-size: 14px;
+            color: #555;
         }
 
+        /* =========================
+           SECTIONS
+        ========================= */
+
+        .content-section {
+            margin-top: 35px;
+        }
+
+        .content-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        /* =========================
+           IMAGE GALLERY
+        ========================= */
+
+        .image-gallery {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 5px 0 15px 0;
+            scrollbar-width: thin;
+        }
+
+        .gallery-image {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex: 0 0 auto;
+            cursor: pointer;
+            background: #eee;
+            transition: opacity 0.15s ease;
+        }
+
+        .gallery-image:hover {
+            opacity: 0.85;
+        }
+
+        .no-content {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* =========================
+           VIDEO GRID
+        ========================= */
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .video-card {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+            background: #eee;
+        }
+
+        .video-title {
+            margin-top: 8px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .video-source {
+            margin-top: 4px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        /* =========================
+           STATS
+        ========================= */
+
         .stats {
-            margin-top: 25px;
+            margin-top: 35px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
             color: #777;
             font-size: 14px;
         }
 
-        #status {
-            margin-bottom: 20px;
+        /* =========================
+           LIGHTBOX
+        ========================= */
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
 
-        .image-gallery {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 10px 0 20px 0;
-}
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+        }
 
-.gallery-image {
-    width: 220px;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 8px;
-    flex: 0 0 auto;
-    cursor: pointer;
-}
+        .lightbox-close {
+            position: fixed;
+            top: 15px;
+            right: 25px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+        }
 
-.gallery-image:hover {
-    opacity: 0.85;
-}
+        .lightbox-prev,
+        .lightbox-next {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 50px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            padding: 20px;
+        }
+
+        .lightbox-prev {
+            left: 10px;
+        }
+
+        .lightbox-next {
+            right: 10px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 20px 15px;
+            }
+
+            .profile-top {
+                flex-direction: column;
+            }
+
+            .profile-image {
+                width: 130px;
+                height: 130px;
+            }
+
+            .profile-info h1 {
+                font-size: 26px;
+            }
+
+            .gallery-image {
+                width: 180px;
+                height: 180px;
+            }
+
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
     </style>
 </head>
 
+
 <body>
 
-    <a class="back" href="register.html">← Creators</a>
+    <a class="back" href="register.html">
+        ← Creators
+    </a>
 
     <div id="status">
         Loading profile...
@@ -94,10 +320,56 @@
     <div id="profile"></div>
 
 
+    <!-- =========================
+         LIGHTBOX
+    ========================= -->
+
+    <div
+        id="lightbox"
+        class="lightbox"
+        onclick="closeLightbox()"
+    >
+
+        <div
+            class="lightbox-close"
+            onclick="event.stopPropagation(); closeLightbox()"
+        >
+            ×
+        </div>
+
+        <div
+            class="lightbox-prev"
+            onclick="event.stopPropagation(); previousImage()"
+        >
+            ‹
+        </div>
+
+        <img
+            id="lightbox-image"
+            alt="Image"
+        >
+
+        <div
+            class="lightbox-next"
+            onclick="event.stopPropagation(); nextImage()"
+        >
+            ›
+        </div>
+
+    </div>
+
+
     <script>
 
-        const SUPABASE_URL = "https://qmypbudkzaaybarhcjhn.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_PIiIFOfS8JqGPV2s1-v-6w_fU7ZlN-2";
+        /* =========================================
+           SUPABASE
+        ========================================= */
+
+        const SUPABASE_URL =
+            "https://qmypbudkzaaybarhcjhn.supabase.co";
+
+        const SUPABASE_KEY =
+            "sb_publishable_PIiIFOfS8JqGPV2s1-v-6w_fU7ZlN-2";
 
         const { createClient } = supabase;
 
@@ -107,38 +379,188 @@
         );
 
 
-        async function loadProfile() {
+        /* =========================================
+           LIGHTBOX STATE
+        ========================================= */
 
-            const params = new URLSearchParams(
-                window.location.search
-            );
+        let galleryImages = [];
 
-            const id = params.get("id");
+        let currentImageIndex = 0;
 
 
-            if (!id) {
+        /* =========================================
+           OPEN LIGHTBOX
+        ========================================= */
 
-                document.getElementById("status").textContent =
-                    "Profile not found.";
+        function openLightbox(index) {
 
+            if (galleryImages.length === 0) {
                 return;
             }
 
+            currentImageIndex = index;
 
-            const profileId = Number(id);
+            document.getElementById(
+                "lightbox-image"
+            ).src = galleryImages[currentImageIndex];
+
+            document.getElementById(
+                "lightbox"
+            ).style.display = "flex";
+
+        }
+
+
+        /* =========================================
+           CLOSE LIGHTBOX
+        ========================================= */
+
+        function closeLightbox() {
+
+            document.getElementById(
+                "lightbox"
+            ).style.display = "none";
+
+        }
+
+
+        /* =========================================
+           PREVIOUS IMAGE
+        ========================================= */
+
+        function previousImage() {
+
+            if (galleryImages.length === 0) {
+                return;
+            }
+
+            currentImageIndex--;
+
+            if (currentImageIndex < 0) {
+
+                currentImageIndex =
+                    galleryImages.length - 1;
+
+            }
+
+            document.getElementById(
+                "lightbox-image"
+            ).src = galleryImages[currentImageIndex];
+
+        }
+
+
+        /* =========================================
+           NEXT IMAGE
+        ========================================= */
+
+        function nextImage() {
+
+            if (galleryImages.length === 0) {
+                return;
+            }
+
+            currentImageIndex++;
+
+            if (
+                currentImageIndex >=
+                galleryImages.length
+            ) {
+
+                currentImageIndex = 0;
+
+            }
+
+            document.getElementById(
+                "lightbox-image"
+            ).src = galleryImages[currentImageIndex];
+
+        }
+
+
+        /* =========================================
+           KEYBOARD CONTROLS
+        ========================================= */
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                const lightbox =
+                    document.getElementById("lightbox");
+
+                if (
+                    lightbox.style.display !== "flex"
+                ) {
+                    return;
+                }
+
+                if (event.key === "Escape") {
+                    closeLightbox();
+                }
+
+                if (event.key === "ArrowLeft") {
+                    previousImage();
+                }
+
+                if (event.key === "ArrowRight") {
+                    nextImage();
+                }
+
+            }
+        );
+
+
+        /* =========================================
+           LOAD PROFILE
+        ========================================= */
+
+        async function loadProfile() {
+
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+            const id =
+                params.get("id");
+
+
+            /* -----------------------------
+               Validate ID
+            ----------------------------- */
+
+            if (!id) {
+
+                document.getElementById(
+                    "status"
+                ).textContent =
+                    "Profile not found.";
+
+                return;
+
+            }
+
+
+            const profileId =
+                Number(id);
 
 
             if (!Number.isInteger(profileId)) {
 
-                document.getElementById("status").textContent =
+                document.getElementById(
+                    "status"
+                ).textContent =
                     "Invalid profile.";
 
                 return;
+
             }
 
 
-            // Count the view in the background.
-            // A view-counter error must not prevent the profile from loading.
+            /* -----------------------------
+               Count View
+            ----------------------------- */
 
             db.rpc(
                 "increment_profile_views",
@@ -148,77 +570,64 @@
             ).then(({ error }) => {
 
                 if (error) {
+
                     console.error(
                         "View counter error:",
                         error
                     );
+
                 }
 
             });
 
 
-            // Load profile
+            /* -----------------------------
+               Load Profile
+            ----------------------------- */
 
-            const { data: profile, error } =
-                await db
-                    .from("profiles")
-                    .select("*")
-                    .eq("id", profileId)
-                    .single();
+            const {
+                data: profile,
+                error: profileError
+            } = await db
+                .from("profiles")
+                .select("*")
+                .eq("id", profileId)
+                .single();
 
 
-            if (error) {
+            if (profileError || !profile) {
 
-                console.error(error);
+                console.error(profileError);
 
-                document.getElementById("status").textContent =
+                document.getElementById(
+                    "status"
+                ).textContent =
                     "Profile not found.";
 
                 return;
+
             }
 
 
-            // Load profile tags
+            /* -----------------------------
+               Load Tags
+            ----------------------------- */
 
-            const { data: images, error: imageError } =
-    await db
-        .from("profile_images")
-        .select("*")
-        .eq("profile_id", profileId)
-        .eq("status", "approved")
-        .order("position", { ascending: true });
+            const {
+                data: connections,
+                error: tagError
+            } = await db
+                .from("profile_tags")
+                .select(`
+                    tags (
+                        name
+                    )
+                `)
+                .eq(
+                    "profile_id",
+                    profileId
+                );
 
-
-if (imageError) {
-
-    console.error(
-        "Image loading error:",
-        imageError
-    );
-
-}
-const imageList = images || [];
-            let galleryHTML = "";
-            imageList.forEach(image => {
-
-    const {
-        data: publicUrl
-    } = db.storage
-        .from("images")
-        .getPublicUrl(image.storage_path);
-
-
-    galleryHTML += `
-
-        <img
-            class="gallery-image"
-            src="${publicUrl.publicUrl}"
-            alt="${image.title || profile.name}"
-        >
-
-    `;
-
-});
 
             if (tagError) {
 
@@ -230,47 +639,124 @@ const imageList = images || [];
             }
 
 
-            const tags = connections || [];
+            const tags =
+                connections || [];
 
 
-            document.getElementById("status").textContent = "";
+            /* -----------------------------
+               Load Images
+            ----------------------------- */
+
+            const {
+                data: images,
+                error: imageError
+            } = await db
+                .from("profile_images")
+                .select("*")
+                .eq(
+                    "profile_id",
+                    profileId
+                )
+                .eq(
+                    "status",
+                    "approved"
+                )
+                .order(
+                    "position",
+                    {
+                        ascending: true
+                    }
+                );
 
 
-            const container =
-                document.getElementById("profile");
+            if (imageError) {
+
+                console.error(
+                    "Image loading error:",
+                    imageError
+                );
+
+            }
 
 
-            // Profile image
+            const imageList =
+                images || [];
 
-            let image = "";
+
+            /* -----------------------------
+               Load External Links
+            ----------------------------- */
+
+            const {
+                data: links,
+                error: linkError
+            } = await db
+                .from("profile_links")
+                .select("*")
+                .eq(
+                    "profile_id",
+                    profileId
+                );
+
+
+            if (linkError) {
+
+                console.error(
+                    "Link loading error:",
+                    linkError
+                );
+
+            }
+
+
+            const profileLinks =
+                links || [];
+
+
+            /* =================================
+               PROFILE IMAGE
+            ================================= */
+
+            let profileImageHTML = "";
 
 
             if (profile.image_url) {
 
-                image = `
+                profileImageHTML = `
+
                     <img
                         class="profile-image"
-                        src="${profile.image_url}"
-                        alt="${profile.name}"
+                        src="${escapeHTML(profile.image_url)}"
+                        alt="${escapeHTML(profile.name)}"
                     >
+
                 `;
 
             }
 
 
-            // Tags
+            /* =================================
+               TAG HTML
+            ================================= */
 
             let tagHTML = "";
 
 
             tags.forEach(connection => {
 
-                if (connection.tags) {
+                if (
+                    connection.tags &&
+                    connection.tags.name
+                ) {
 
                     tagHTML += `
+
                         <span class="tag">
-                            ${connection.tags.name}
+                            ${escapeHTML(
+                                connection.tags.name
+                            )}
                         </span>
+
                     `;
 
                 }
@@ -278,25 +764,234 @@ const imageList = images || [];
             });
 
 
-            // Display profile
+            /* =================================
+               LINKS HTML
+            ================================= */
+
+            let linksHTML = "";
+
+
+            profileLinks.forEach(link => {
+
+                if (!link.url) {
+                    return;
+                }
+
+                linksHTML += `
+
+                    <a
+                        class="profile-link"
+                        href="${escapeHTML(link.url)}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        ${escapeHTML(
+                            link.platform
+                        )}
+                    </a>
+
+                `;
+
+            });
+
+
+            /* =================================
+               GALLERY HTML
+            ================================= */
+
+            let galleryHTML = "";
+
+            galleryImages = [];
+
+
+            imageList.forEach(
+                (image, index) => {
+
+                    if (!image.storage_path) {
+                        return;
+                    }
+
+
+                    const {
+                        data: publicUrl
+                    } = db.storage
+                        .from("images")
+                        .getPublicUrl(
+                            image.storage_path
+                        );
+
+
+                    const imageUrl =
+                        publicUrl.publicUrl;
+
+
+                    galleryImages.push(
+                        imageUrl
+                    );
+
+
+                    galleryHTML += `
+
+                        <img
+                            class="gallery-image"
+                            src="${escapeHTML(imageUrl)}"
+                            alt="${escapeHTML(
+                                image.title ||
+                                profile.name
+                            )}"
+                            onclick="openLightbox(${index})"
+                        >
+
+                    `;
+
+                }
+            );
+
+
+            /* =================================
+               NO IMAGES MESSAGE
+            ================================= */
+
+            if (!galleryHTML) {
+
+                galleryHTML = `
+
+                    <div class="no-content">
+                        No images available.
+                    </div>
+
+                `;
+
+            }
+
+
+            /* =================================
+               NO LINKS MESSAGE
+            ================================= */
+
+            if (!linksHTML) {
+
+                linksHTML = `
+
+                    <span class="no-content">
+                        No external links.
+                    </span>
+
+                `;
+
+            }
+
+
+            /* =================================
+               DISPLAY PROFILE
+            ================================= */
+
+            document.getElementById(
+                "status"
+            ).textContent = "";
+
+
+            const container =
+                document.getElementById(
+                    "profile"
+                );
+
 
             container.innerHTML = `
 
-                ${image}
+                <!-- PROFILE HEADER -->
 
-                <h1>${profile.name}</h1>
+                <section class="profile-header">
 
-                <p>
-                    ${profile.description || ""}
-                </p>
+                    <div class="profile-top">
 
-                <div class="tags">
-                    ${tagHTML}
-                </div>
+                        ${profileImageHTML}
+
+                        <div class="profile-info">
+
+                            <h1>
+                                ${escapeHTML(
+                                    profile.name
+                                )}
+                            </h1>
+
+                            <p class="profile-description">
+                                ${escapeHTML(
+                                    profile.description || ""
+                                )}
+                            </p>
+
+                            <div class="profile-links">
+
+                                ${linksHTML}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="tags">
+
+                        ${tagHTML}
+
+                    </div>
+
+                </section>
+
+
+                <!-- IMAGES -->
+
+                <section class="content-section">
+
+                    <h2>
+                        Images
+                    </h2>
+
+                    <div class="image-gallery">
+
+                        ${galleryHTML}
+
+                    </div>
+
+                </section>
+
+
+                <!-- VIDEOS -->
+
+                <section class="content-section">
+
+                    <h2>
+                        Videos
+                    </h2>
+
+                    <div
+                        id="video-grid"
+                        class="video-grid"
+                    >
+
+                        <div class="no-content">
+                            Videos will appear here.
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- STATS -->
 
                 <div class="stats">
-                    ${profile.views} views ·
-                    ${profile.posts_count} posts
+
+                    ${profile.views || 0}
+                    views
+
+                    ·
+
+                    ${profile.posts_count || 0}
+                    posts
+
                 </div>
 
             `;
@@ -304,9 +999,37 @@ const imageList = images || [];
         }
 
 
+        /* =========================================
+           HTML ESCAPING
+        ========================================= */
+
+        function escapeHTML(value) {
+
+            if (value === null ||
+                value === undefined) {
+
+                return "";
+
+            }
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+
+        /* =========================================
+           START
+        ========================================= */
+
         loadProfile();
 
     </script>
 
 </body>
+
 </html>
